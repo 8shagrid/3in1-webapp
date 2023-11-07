@@ -24,7 +24,7 @@ def show_churn_prediction():
         monthly_purchase = st.number_input("Monthly Purchase (in thousands of IDR)")
 
     if st.button("Predict Churn"):
-        prediction = predict_churn(
+        prediction, prediction_description = predict_churn(
             tenure_months,
             device_class,
             games_product,
@@ -38,8 +38,10 @@ def show_churn_prediction():
         )
         if prediction == 1:
             st.error("Churn Prediction: Yes")
+            st.error(f"{prediction_description}")
         else:
             st.success("Churn Prediction: No")
+            st.success(f"{prediction_description}")
 
 
 def predict_churn(
@@ -77,4 +79,8 @@ def predict_churn(
             input_data[col] = label_encoders[col].transform(input_data[col])
 
     prediction = model.predict(input_data)
-    return prediction[0]
+    if prediction == 1:
+        prediction_description = "Berdasarkan analisis mendalam dari perilaku pelanggan ini dan data historis yang tersedia, model kami memprediksi bahwa pelanggan ini mungkin akan beralih ke pesaing atau mengakhiri langganan dengan kita. Faktor-faktor seperti frekuensi penggunaan layanan, interaksi dengan produk, dan masa tenang sebelumnya menjadi dasar utama dalam prediksi ini. Hal ini penting bagi kita untuk memberikan perhatian khusus kepada pelanggan ini dan mungkin menjalankan strategi retensi atau penawaran khusus untuk meminimalkan kemungkinan Churn."
+    else:
+        prediction_description = "Dari hasil analisis, model kami dengan keyakinan tinggi memprediksi bahwa pelanggan ini kemungkinan besar akan tetap menjadi pelanggan setia. Beberapa faktor yang mendukung prediksi ini termasuk sejarah pembelian yang stabil, tingkat kepuasan yang tinggi, dan keterlibatan yang konsisten dengan produk atau layanan kami. Kami dapat memanfaatkan kesempatan ini untuk memperluas hubungan dengan pelanggan dan mengembangkan strategi peningkatan nilai pelanggan."
+    return prediction, prediction_description
