@@ -442,28 +442,53 @@ def display_churn_analysis(filtered_df):
     col_fig_0, col_fig_1, col_fig_2 = st.columns(3)
 
     with col_fig_0:
-        st.markdown(f"#### Churn Percentage from {selected_service}")
-        fig0 = px.pie(
-            filtered_df.groupby([selected_service, "Churn Label"])["Customer ID"]
-            .count()
-            .reset_index(),
-            values="Customer ID",
-            facet_col="Churn Label",
-            hole=0.5,
-            names=selected_service,
-        )
-        st.plotly_chart(fig0, use_container_width=True)
-
-    with col_fig_1:
         st.markdown(f"#### Total Customer by {selected_service}")
         # Membuat grafik pie
-        fig1 = px.bar(
+        fig0 = px.bar(
             filtered_df.groupby(selected_service)["Customer ID"].count().reset_index(),
             x=selected_service,
             y="Customer ID",
             color=selected_service,
             text="Customer ID",
         )
+        st.plotly_chart(fig0, use_container_width=True)
+
+    with col_fig_1:
+        # st.markdown(f"#### Churn Rate by {selected_service}")
+        # fig0 = px.pie(
+        #     filtered_df.groupby([selected_service, "Churn Label"])["Customer ID"]
+        #     .count()
+        #     .reset_index(),
+        #     values="Customer ID",
+        #     facet_col="Churn Label",
+        #     hole=0.5,
+        #     names=selected_service,
+        # )
+        # st.plotly_chart(fig0, use_container_width=True)
+
+        # Membuat tabel kontingensi antara Layanan dan 'Churn Label'
+        contingency_table = pd.crosstab(
+            filtered_df[selected_service], filtered_df["Churn Label"]
+        )
+
+        # Hitung proporsi Churn (pemutusan hubungan) untuk setiap Layanan
+        contingency_table["Churn Rate"] = (
+            contingency_table["Yes"]
+            / (contingency_table["Yes"] + contingency_table["No"])
+        ) * 100
+
+        # Plotting menggunakan Plotly Pie Chart
+        fig1 = px.pie(
+            contingency_table,
+            names=contingency_table.index,
+            values="Churn Rate",
+            title=f"Churn Rate by {selected_service}",
+            labels={"Churn Rate": "Churn Rate (%)", "index": selected_service},
+            hole=0.3,
+        )
+
+        # Menambahkan label pada setiap sektor pie
+        fig1.update_traces(textinfo="percent+label", pull=[0.1, 0.1, 0.1, 0.1])
         st.plotly_chart(fig1, use_container_width=True)
 
     with col_fig_2:
